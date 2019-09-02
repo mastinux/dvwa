@@ -172,3 +172,64 @@ Exploit:
 ```
 /vulnerable.jsp?p=../../../../var/log/access.log%00
 ```
+
+## File upload
+
+L'attaccante carica un file a suo piacimento per poi eseguirlo in altro modo.
+L'attaccante può sovrascrivere file già presenti sul server sfruttando path e filename presenti nei metadati HTTP.
+Altri problemi si hanno se dimensione o contenuto del file vengono manipolati.
+
+- crea un file fu.php col seguente contenuto
+
+```
+<?php
+ 
+phpinfo();
+
+?>
+```
+
+- carica il file tramite la funzione
+
+- visita `http://localhost/hackable/uploads/fu.php`
+
+## Insecure CAPTCHA
+
+Il codice fa il controllo sul valore di `$_POST[ 'step' ]`.
+Se vale `1` valuta il CAPTCHA, diversamente (`2`) esegue l'operazione di cambio password.
+
+- modifico il valore di `step` a `2` e inserisco la password di mio piacimento (il codice non entra nel ramo if che controlla il CAPTCHA)
+
+## SQL injection
+
+Devo iniettare del codice che verifichi la condizione WHERE.
+
+Codice vulnerabile:
+
+`$query  = "SELECT first_name, last_name FROM users WHERE user_id = '$id';";`
+
+Exploit:
+
+`' or 'a' = 'a`
+
+## SQL injection (blind)
+
+L'attaccante si aspetta a seguito della query al database una risposta `true` o `false`.
+Osservando le risposte l'attaccante può estrarre informazioni rilevanti.
+Se il contenuto dell pagina che ritorna `true` è diverso da quella che ritorna `false`, l'attaccante è in grado di distinguere quando la query eseguita ritorna `true` o `false`.
+
+Codice vulnerabile:
+
+```php
+// Check database
+    $getid  = "SELECT first_name, last_name FROM users WHERE user_id = '$id';";
+    $result = mysqli_query($GLOBALS["___mysqli_ston"],  $getid ); // Removed 'or die' to suppress mysql errors
+
+    // Get results
+    $num = @mysqli_num_rows( $result ); // The '@' character suppresses errors 
+```
+
+Exploit:
+
+`' or '1'='1`
+
