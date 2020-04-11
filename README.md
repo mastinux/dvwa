@@ -1,5 +1,5 @@
 
-- [DVWA](#dvwa)
+- DVWA Attacks
   - [Brute force](./README-Brute-Force.md)
   - [Command injection](./README-Command-Injection.md)
   - [CSRF](./README-CSRF.md)
@@ -14,9 +14,12 @@
   - [XSS (Stored)](./README-XSS-Stored.md)
   - [CSP Bypass](./README-CSP-Bypass.md)
   - [Javascript](./README-JavaScript.md)
+- [DVWA configuration](#dvwa-configuration)
 - [Man pages](#man-pages)
 
-# DVWA
+TODO https://owasp.org/www-project-web-security-testing-guide/latest/
+
+# DVWA Configuration
 
 - DVWA
 	- Host: 172.17.0.2
@@ -25,7 +28,7 @@
 - PHP web server
 	- Host: 172.17.0.3
 
-##### Man pages
+# Man pages
 
 curl
 
