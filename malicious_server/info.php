@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-        <meta charset="UTF-8">
+	<title>Malicious - Info</title>
+	<meta charset="UTF-8">
 </head>
 <body>
 
