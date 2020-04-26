@@ -131,5 +131,4 @@ generateSessionToken();
 
 Exploit:
 
-TODO CONTINUE
-
+TODO usa un xss per risolvere questo livello

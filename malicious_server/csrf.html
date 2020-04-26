@@ -25,37 +25,23 @@
 	<!--------------------------------------------------------------------->
 
 	<h1>High</h1>
-	
+	after clicking on link new password will be password4<br>
 	<button onclick="requestHigh()">Click me!</button>
 	
 <script>
 	function requestHigh(){
-		var req = new XMLHttpRequest();
-		req.open("GET", "http://172.17.0.2/vulnerabilities/csrf/");
-		req.send();
+		var xhr = new XMLHttpRequest();
 		
-		req.onreadystatechange = function() {
-			if(this.readyState == this.HEADERS_RECEIVED) {
-				// Get the raw header string
-				var headers = request.getAllResponseHeaders();
-
-				// Convert the header string into an array
-				// of individual headers
-				var arr = headers.trim().split(/[\r\n]+/);
-
-				// Create a map of header names to values
-				var headerMap = {};
-				arr.forEach(function (line) {
-					var parts = line.split(': ');
-					var header = parts.shift();
-					var value = parts.join(': ');
-					headerMap[header] = value;
-				});
-				
-				console.log(headerMap)
+		xhr.onreadystatechange = function() {
+			if (xhr.readyState === 4) {
+				console.log(xhr.response);
 			}
 		}
+		
+		xhr.open("GET", "http://172.17.0.2/vulnerabilities/csrf/", true);
+		xhr.send('');
 	}
 </script>
+
 </body>
 </html>
