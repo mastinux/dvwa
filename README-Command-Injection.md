@@ -111,21 +111,21 @@ $target = str_replace( array_keys( $substitutions ), $substitutions, $target );
 ### Command injection - High
 
 ```
-	// Set blacklist
-	$substitutions = array(
-	'&'  => '',
-	';'  => '',
-	'| ' => '',
-	'-'  => '',
-	'$'  => '',
-	'('  => '',
-	')'  => '',
-	'`'  => '',
-	'||' => '',
-	);
+// Set blacklist
+$substitutions = array(
+'&'  => '',
+';'  => '',
+'| ' => '',
+'-'  => '',
+'$'  => '',
+'('  => '',
+')'  => '',
+'`'  => '',
+'||' => '',
+);
 
-	// Remove any of the charactars in the array (blacklist).
-	$target = str_replace( array_keys( $substitutions ), $substitutions, $target );
+// Remove any of the charactars in the array (blacklist).
+$target = str_replace( array_keys( $substitutions ), $substitutions, $target );
 ```
 
 - inietta il comando CMD inserendo i seguenti valori:
