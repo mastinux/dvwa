@@ -49,5 +49,5 @@ $name = preg_replace( '/<(.*)s(.*)c(.*)r(.*)i(.*)p(.*)t/i', '', $_GET[ 'name' ] 
 
 Exploit:
 
-- TODO
+- accedi a `http://172.17.0.2/vulnerabilities/xss_r/?name=<img src="172.17.0.2/not_existing.jpg" onerror=alert('hacked')>`
 
